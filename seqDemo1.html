@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漆平计算</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    input[type="text"],
+    select {
+      width: 327px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    select {
+      -webkit-appearance: none;
+      /* Remove default styling in WebKit browsers */
+      -moz-appearance: none;
+      /* Remove default styling in Firefox */
+      appearance: none;
+      /* Remove default styling in other browsers */
+      background-color: #fff;
+      background-image: linear-gradient(to right, #ddd 1px, transparent 1px),
+        linear-gradient(to bottom, #fff 0px, #fff 100%);
+      background-repeat: no-repeat, repeat;
+      background-position: right 10px top 50%, 0 0;
+      background-size: 16px auto, 100%;
+      width: 350px;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+
+    #copyButton, #clearBtn {
+      margin-top: 10px;
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #copyButton:hover {
+      background-color: #0056b3;
+    }
+
+    #message {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      color: #fff;
+      display: none;
+    }
+
+    .success {
+      background-color: #28a745;
+    }
+
+    .error {
+      background-color: #dc3545;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <label for="inputField">使用平方数：</label>
+    <input type="text" id="inputField" placeholder="输入平方数..." oninput="validateInput()">
+  </div>
+  <div>
+    <label for="dropdown">使用漆类型：</label>
+    <select id="dropdown">
+      <option value="">请选择</option>
+      <option value="水性套餐漆">水性套餐漆</option>
+      <option value="水性三合一">水性三合一</option>
+      <option value="油性（不含底漆，清漆）">油性（不含底漆，清漆）</option>
+      <option value="油性（含底漆，不含清漆）">油性（含底漆，不含清漆）</option>
+      <option value="油性（含底漆，清漆）">油性（含底漆，清漆）</option>
+      <option value="瓷砖漆">瓷砖漆</option>
+      <option value="金属漆">金属漆</option>
+      <option value="乳胶漆">乳胶漆</option>
+    </select>
+  </div>
+
+  <div id="result">请输入平方数并选择漆种....</div>
+  <button id="clearBtn">清空</button>
+  <button id="copyButton">复制结果</button>
+
+  <div id="message"></div>
+
+  <script>
+    function validateInput() {
+      const inputField = document.getElementById('inputField');
+      const regex = /^[0-9]*$/; // 只允许数字输入
+      if (!regex.test(inputField.value)) {
+        inputField.value = inputField.value.replace(/[^0-9]/g, ''); // 移除非数字字符
+      }
+    }
+    function updateResult() {
+      const inputField = document.getElementById('inputField').value;
+      const dropdown = document.getElementById('dropdown').value;
+      const resultDiv = document.getElementById('result');
+      let realSq = inputField ? parseFloat(inputField.trim()) : 0;
+      if (realSq < 1 || !dropdown) {
+        resultDiv.textContent = "请输入平方数并选择漆种....";
+        return
+      }
+      resultDiv.textContent = getReasult(dropdown,realSq);
+    }
+
+    function showMessage(message, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = message;
+      messageDiv.className = `success ${type}`;
+      messageDiv.style.display = 'block';
+      setTimeout(() => {
+        messageDiv.style.display = 'none';
+      }, 1000);
+    }
+
+    document.getElementById('inputField').addEventListener('input', updateResult);
+    document.getElementById('dropdown').addEventListener('change', updateResult);
+
+    document.getElementById('copyButton').addEventListener('click', function () {
+      const resultDiv = document.getElementById('result');
+      const textToCopy = resultDiv.textContent;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        showMessage('内容已复制到剪贴板!', 'success');
+      }).catch(err => {
+        console.error('复制失败:', err);
+        showMessage('复制失败，请手动选择复制！', 'error');
+      });
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('inputField').value = '';
+      document.getElementById('dropdown').value = '';
+    });
+    function getReasult(seq, selectVal){
+      let realVal = Math.ceil(selectVal);
+      let result = '';
+      switch (seq) {
+        case '水性套餐漆':
+          result = `您好，${selectVal}平需要${Math.ceil(realVal/10)}kg底漆,${Math.ceil(realVal/10)}kg清漆,${Math.ceil(realVal/4)}kg面漆。`
+          break;
+        case '水性三合一':
+          result = `您好，${selectVal}平需要${Math.ceil(realVal/5)}kg。`
+          break;
+        case '油性（不含底漆，清漆）':
+          result = `您好，${selectVal}平需要${Math.ceil(realVal/3)}kg面漆。`
+          break;
+        case '油性（含底漆，不含清漆）':
+          result = `您好，${selectVal}平需要${Math.ceil(realVal/6)}kg底漆，${Math.ceil(realVal/3)}kg面漆。`
+          break;
+        case '油性（含底漆，清漆）':
+          result = `您好，${selectVal}平需要${Math.ceil(realVal/6)}kg底漆，${Math.ceil(realVal/6)}kg清漆，${Math.ceil(realVal/3)}kg面漆。`
+          break;
+        case '瓷砖漆':
+          result = `您好，${selectVal}平需要${Math.ceil(realVal/4)}kg瓷砖漆。`
+          break;
+        case '金属漆':
+          result = `您好，${selectVal}平需要${Math.ceil(realVal/5)}kg金属漆。`
+          break;
+        case '乳胶漆':
+          result = `您好，${selectVal}平需要${Math.ceil(realVal/4)}kg乳胶漆。`
+          break;
+        default:
+          break;
+      }
+      return result;
+    }
+  </script>
+</body>
+
+</html>
